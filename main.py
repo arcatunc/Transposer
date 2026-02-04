@@ -14,17 +14,30 @@ def find_note_index(note):
     }
     return note_map.get(note.upper().strip(), -1)
 
-def transposer(note, target_value, source_value):
+def transposer(note_data, source_value, target_value):
     rem_notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-    current_index = find_note_index(note)
+
+    # 1. Check and separate the beat
+    if ":" in note_data:
+        parts = note_data.split(":")
+        clean_note = parts[0]
+        beat_suffix = ":" + parts[1]
+    else:
+        clean_note = note_data
+        beat_suffix = " "
+
+    # 2. Find index of the clean note
+    current_index = find_note_index(clean_note)
 
     # invalid logs
-    if current_index == -1: return note
+    if current_index == -1: return note_data
 
     remaining = target_value - source_value
 
     new_index = (current_index + remaining) % 12
-    return rem_notes[new_index]
+    
+    # Return the new note WITH the beat suffix
+    return rem_notes[new_index] + beat_suffix
 
 def instrument_select(question_text):
     print(f"\n{question_text}")
@@ -35,7 +48,7 @@ def instrument_select(question_text):
         choice = input("Choose: ")
         if choice in INSTRUMENTS:
             return INSTRUMENTS[choice]
-        print("Wrong choise please try again.")
+        print("Wrong choice please try again.")
 
 if __name__ == "__main__":
     print("\n🎵 NOTE TRANSPOSER 🎵")
@@ -46,6 +59,7 @@ if __name__ == "__main__":
 
     print("-" * 40)
     print(f"MOD: {source_info['name']} --> {target_info['name']}")
+    print("Format example: C:4 or D#:0,5 .")
     print("For exit press q.")
     print("-" * 40)
     
