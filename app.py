@@ -20,6 +20,7 @@ def find_note_index(note):
 
 def transposer(note_data, source_value, target_value):
     abc_notes_map = ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B']
+    readable_notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
     
     if ":" in note_data:
         parts = note_data.split(":")
@@ -28,14 +29,27 @@ def transposer(note_data, source_value, target_value):
     else:
         clean_note = note_data
         beat = "1"
+    
+    octave_marker = ""
+    if clean_note.endswith("+"):
+        clean_note = clean_note[:-1]
+        octave_marker = "'" 
+    elif clean_note.endswith("-"):
+        clean_note = clean_note[:-1]
+        octave_marker = "," 
+    else:
+        clean_note = clean_note
 
     current_index = find_note_index(clean_note)
     if current_index == -1: return None, None, None
 
     remaining = target_value - source_value
     new_index = (current_index + remaining) % 12
-    
-    abc_code = abc_notes_map[new_index]
+
+    abc_code = abc_notes_map[new_index] + octave_marker
+    readable_text = readable_notes[new_index]
+    if octave_marker == "'": readable_text += "(+)"
+    if octave_marker == ",": readable_text += "(-)"
     
     readable_notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
     readable_text = readable_notes[new_index]
@@ -45,6 +59,12 @@ def transposer(note_data, source_value, target_value):
 # --- INTERFACE ---
 st.title("🎷 Visual Note Converter")
 st.write("Enter the notes; you can either see it translated or displayed on the sheet music.")
+st.write("""
+**Guide:**
+* **Normal:** `A:1`
+* **Fine:** `A+:1` (1 Octave Up)
+* **Thick:** `A-:1` (1 Octace Down)
+""")
 
 # Sidebar
 st.sidebar.header("Instruments Settings")
@@ -97,7 +117,7 @@ if st.button("Transpose and Create 🎼"):
             svg {{ width: 100% !important; }}
         </style>
         <script type="text/javascript">
-            var abc = "X:1\\nM:4/4\\nL:1/4\\nK:none\\n{abc_string}";
+            var abc = "X:1\\nM:4/4\\nL:1/4\\nK:C\\n{abc_string}";
             ABCJS.renderAbc("paper", abc, {{ 
                 responsive: "resize",
                 add_classes: true
