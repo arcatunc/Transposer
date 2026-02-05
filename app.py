@@ -66,6 +66,12 @@ if st.button("Transpose and Create 🎼"):
         for item in raw_input:
             abc_code, read_text, beat = transposer(item, source_val, target_val)
             if abc_code:
+                if beat == "0.5":
+                    formatted_beat = "/2"
+                elif beat == "0.25":
+                    formatted_beat = "/4"
+                else:
+                    formatted_beat = beat 
                 abc_output.append(f"{abc_code}{beat}")
                 text_display.append(f"{read_text}:{beat}")
         
