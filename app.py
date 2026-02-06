@@ -19,8 +19,8 @@ def find_note_index(note):
     return note_map.get(note.upper().strip(), -1)
 
 def transposer(note_data, source_value, target_value):
-    abc_notes_map = ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B']
-    readable_notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+    abc_notes_map = ['C', '^C', 'D', '_E', 'E', 'F', '^F', 'G', '_A', 'A', '_B', 'B']
+    readable_notes = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
     
     if ":" in note_data:
         parts = note_data.split(":")
@@ -46,12 +46,14 @@ def transposer(note_data, source_value, target_value):
     remaining = target_value - source_value
     new_index = (current_index + remaining) % 12
 
+    raw_abc_note = abc_notes_map[new_index] 
+
     abc_code = abc_notes_map[new_index] + octave_marker
     readable_text = readable_notes[new_index]
     if octave_marker == "'": readable_text += "(+)"
     if octave_marker == ",": readable_text += "(-)"
     
-    readable_notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+    readable_notes = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
     readable_text = readable_notes[new_index]
     
     return abc_code, readable_text, beat
