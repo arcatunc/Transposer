@@ -143,22 +143,51 @@ if st.button("Transpose 🎼"):
     st.session_state.input_text = input_text
     
     if input_text:
-        raw_input = input_text.split()
-        abc_output = []      
+        raw_input = input_text.split()     
         text_display = []    
+
+        # Variables for Measurement and Row Management
+        all_measures = []
+        current_measure_notes = []
+        beats_in_current_measure = 0.0
         
         for item in raw_input:
-            abc_code, read_text, beat = transposer(item, source_val, target_val)
+            abc_code, read_text, beat_str = transposer(item, source_val, target_val)
             if abc_code:
-                abc_output.append(f"{abc_code}{beat}")
-                text_display.append(f"{read_text}:{beat}")
+                text_display.append(f"{read_text}:{beat_str}")
+
+                try:
+                    b_float = float(beat_str)
+                except:
+                    b_float = 1.0
+
+                if beat_str == "0.5": formatted_abc = f"{abc_code}/2"
+                elif beat_str == "0.25": formatted_abc = f"{abc_code}/4"
+                elif beat_str == "1": formatted_abc = abc_code
+                else: formatted_abc = f"{abc_code}{beat_str}"
+
+                current_measure_notes.append(formatted_abc)
+                
+                beats_in_current_measure += b_float
+
+                if beats_in_current_measure >= 4.0:
+                    all_measures.append(" ".join(current_measure_notes))
+                    current_measure_notes = []
+                    beats_in_current_measure = 0.0
+
+        if current_measure_notes:
+            all_measures.append(" ".join(current_measure_notes))
+
+        abc_lines = []
+        for i in range(0, len(all_measures), 4):
+            line = " | ".join(all_measures[i:i+4]) + " |"
+            abc_lines.append(line)
         
+        abc_string = "\\n".join(abc_lines)
+
         # Results
         st.success("Translation Successful!")
         st.code(" ".join(text_display), language="text")
-        
-        # ABCJS 
-        abc_string = " ".join(abc_output)
         
         html_code = f"""
         <script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.2.2/abcjs-basic-min.js"></script>
@@ -171,19 +200,25 @@ if st.button("Transpose 🎼"):
                 border: 1px solid #ddd;
                 text-align: center;
                 min-height: 150px;
-                overflow-x: auto;
             }}
-            svg {{ width: 100% !important; }}
+            svg {{ width: 100% !important; height: auto !important; }}
         </style>
         <script type="text/javascript">
-            var abc = "X:1\\nM:4/4\\nL:1/4\\nK:C\\n{abc_string}";
-            ABCJS.renderAbc("paper", abc, {{ 
+            var abcData = `X:1
+M:4/4
+L:1/4
+K:C
+{abc_string}`;
+            
+            ABCJS.renderAbc("paper", abcData, {{ 
                 responsive: "resize",
-                add_classes: true
+                paddingtop: 0,
+                paddingbottom: 0,
+                staffwidth: 700
             }});
         </script>
         """
-        components.html(html_code, height=350)
+        components.html(html_code, height=450)
         
     else:
         st.warning("Please enter notes.")
